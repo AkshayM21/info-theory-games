@@ -88,13 +88,13 @@ def main():
         ans += " "
         charCount += 1
 
-    print("Your word is " + ans + "! We guessed your word in " + str(numQuestions+1) + " questions.")
+    print("Your word is " + ans + "! We guessed your word in " + str(numQuestions) + " questions.")
 
 
 def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuestions, noChars, yesChars, puncChars):
     probabilities = countLetters("", numWords, lengths, word, noChars)
 
-    assumingTrueCount = probabilities.copy()
+    assumingTrueCount = countLetters("", numWords, lengths, word, noChars)
 
 
     #****** check if there's only one word possible then guess that if so
@@ -174,7 +174,7 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
                     if teststr.find(char) == -1:
                         break
                     else:
-                        word[sum(lengths[:i] + teststr.index(char))] = char
+                        word[sum(lengths[:i]) + teststr.index(char)] = char
 
     for char in guaranteed:
         yesChars.append(char)
@@ -182,24 +182,20 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
     # guaranteed now has the list of letters that are guaranteed to be in the word/phrase
 
 
-
-
-
-    counter = [[[0, 0] for _ in range(26)] for _ in range(numWords)]
-
+    counter = [[0 for _ in range(26)] for _ in range(numWords)]
 
     if lieDetected==False:
         for char in noQuestions:
             additionalCount = countLetters(char, numWords, lengths, word, noChars)
             for i in range(numWords):
                 for j in range(26):
-                    counter[i][j] += additionalCount[i][j]*probabilities[i][j]
+                    counter[i][j] += additionalCount[i][j][0]*probabilities[i][j][0]
 
     #now, assuming all the no's were legit
     for i in range(numWords):
-        multiplier = 1 - sum([probabilities[i][alpha.index(noQuestionChar)] for noQuestionChar in noQuestions])
+        multiplier = 1 - sum([probabilities[i][alpha.index(noQuestionChar)][0] for noQuestionChar in noQuestions])
         for j in range(26):
-            counter[i][j] += assumingTrueCount[i][j] * multiplier
+            counter[i][j] += assumingTrueCount[i][j][0] * multiplier
 
     #sum it up
     summedCounts = [0]*26
@@ -208,15 +204,15 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
             summedCounts[j] += counter[i][j]
 
     #rank highest indices
-    alphabet = alpha.copy()
+    alphabet = alpha[:]
     sorted_alphabet = [x for _, x in sorted(zip(summedCounts, alphabet))]
 
     #ask most probable letter
     for char in sorted_alphabet[::-1]:
         if char not in yesChars and char not in noChars:
             #this is the best one to guess
-            print("Question "+str(numQuestions)+": Is there a "+char+"? If yes, please send each position separated by spaces (no brackets or commas).")
-            numQuestions += numQuestions
+            print("Question "+str(numQuestions+1)+": Is there a "+char+"? If yes, please send each position separated by spaces (no brackets or commas).")
+            numQuestions += 1
             temp = list(sys.stdin.readline().split(" "))
             if (temp[0].lower() == 'y'):
                 #read in the positions
@@ -236,7 +232,7 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
 
 
                 for position in temp[1:]:
-                    position = int(position)
+                    position = int(position) - 1
 
                     numInFront = 0
                     for pos in puncPos:
@@ -252,8 +248,12 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
                     word[position-numInFront] = char
                 if char in noQuestions:
                     lieDetected = True
+                    noQuestions.remove(char)
             else:
                 if lieDetected:
+                    noChars.append(char)
+                elif char in noQuestions:
+                    noQuestions.remove(char)
                     noChars.append(char)
                 else:
                     noQuestions.append(char)
