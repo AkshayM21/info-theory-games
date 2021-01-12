@@ -1,4 +1,9 @@
-from english_words import english_words_lower_alpha_set
+from english_words import english_words_lower_set
+
+wordList = english_words_lower_set
+wordList.add("it's")
+wordList.add("he's")
+wordList.add("she's")
 
 numQuestions = 0
 numWords = 0
@@ -6,7 +11,8 @@ lengths = []
 word = []
 lieDetected = False
 
-# stores each letter which has been said is not in the word/phrase but is not confirmed to be or not to be in the word/phrase
+# stores each letter which has been said is not in the word/phrase but is not confirmed to be or not
+# to be in the word/phrase
 noQuestions = []
 
 def main():
@@ -37,11 +43,10 @@ def main():
 
 
 def askNextQuestion():
-    probabilities = []
     probabilities = countLetters("")
     # convert each entry into a probability
 
-    counter = [0]*26
+    counter = [[0 for _ in range(26)] for _ in range(numWords)]
 
     # iterate through noQuestions and run countLetters passing in the letter from that question
     # update counter accordingly
@@ -56,12 +61,16 @@ def askNextQuestion():
 # counts the number of times each letter appears in a valid word given the global variable word and
 # the input c, which dictates that the valid words should also contain c
 # c will be "" when there are no additional constraints
-# countLetters returns an array of the number of times each letter appears in a valid word, in
-# alphabetical order
+# countLetters returns a numWords x 27 2D array which the first 26 entries are arrays of (number of
+# times that letter appears in a valid word, the number of words in which the letter appears) and of
+# which the last entry is the number of valid words
 def countLetters(c):
-    ret = [0]*26
+    ret = [[[0, 0] for _ in range(26)] for _ in range(numWords)]
+    for x in range(numWords):
+        ret[x].append(0)
 
-    # execute what is outlined above
+    
+
 
     return ret
 
