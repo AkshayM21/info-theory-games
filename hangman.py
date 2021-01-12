@@ -1,4 +1,4 @@
-#from english_words import english_words_lower_alpha_set
+from english_words import english_words_lower_alpha_set
 
 numQuestions = 0
 numWords = 0
