@@ -93,9 +93,7 @@ def main():
 
 def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuestions, noChars, yesChars, puncChars):
     probabilities = countLetters("", numWords, lengths, word, noChars)
-
-    assumingTrueCount = countLetters("", numWords, lengths, word, noChars)
-
+    # print("here1")
 
     #****** check if there's only one word possible then guess that if so
     #27th entry is # of valid words
@@ -127,10 +125,12 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
                             continue
                         if len(teststr) == len(regex) and re.match(regex, teststr):
                             for k in range(lengths[i]):
-                                word[sum(lengths[:i] + k)] = teststr[k]
+                                word[sum(lengths[:i]) + k] = teststr[k]
         return (numQuestions, word, lieDetected, noQuestions, noChars, yesChars)
 
-
+    # print("here2 word: ")
+    # print(word)
+    # print("here2")
 
 
     # convert each entry in probabilities into a probability
@@ -143,23 +143,30 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
                 guaranteed.append(chr(j + ord(alpha[0])))
             if chr(j + ord(alpha[0])) in guaranteed and probabilities[i][j][1] != probabilities[i][26]:
                 guaranteed.remove(chr(j + ord(alpha[0])))
+    # print("here3")
+    # print(word)
 
     # check 100% probability thing
 
     for char in guaranteed:
         if char in yesChars:
             guaranteed.remove(char)
+    # print("here4")
+    # print(word)
 
     # guaranteed now has the list of letters that are guaranteed to be in the word/phrase
 
     for char in guaranteed:
         for i in range(numWords):
             ret = checkLetter(char, i, numWords, lengths, word)
-            if ret[1] == False:
+            if ret == False:
                 guaranteed.remove(char)
+    # print("here5")
+    # print(word)
 
     # guaranteed has every letter we don't want to ask about now
 
+    print(guaranteed)
     for char in guaranteed:
         for i in range(numWords):
             regex = ""
@@ -175,9 +182,13 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
                         break
                     else:
                         word[sum(lengths[:i]) + teststr.index(char)] = char
+    # print("here6")
+    # print(word)
 
     for char in guaranteed:
         yesChars.append(char)
+    # print("here7")
+    # print(word)
 
     # guaranteed now has the list of letters that are guaranteed to be in the word/phrase
 
@@ -190,22 +201,32 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
             for i in range(numWords):
                 for j in range(26):
                     counter[i][j] += additionalCount[i][j][0]*probabilities[i][j][0]
-
+    # print("here8")
+    #
+    # print(noChars)
+    # print(noQuestions)
+    assumingTrueCount = countLetters("", numWords, lengths, word, noChars + noQuestions)
     #now, assuming all the no's were legit
     for i in range(numWords):
         multiplier = 1 - sum([probabilities[i][alpha.index(noQuestionChar)][0] for noQuestionChar in noQuestions])
         for j in range(26):
             counter[i][j] += assumingTrueCount[i][j][0] * multiplier
+    # print("here9")
 
     #sum it up
     summedCounts = [0]*26
     for j in range(26):
         for i in range(numWords):
             summedCounts[j] += counter[i][j]
+    # print("here10")
 
     #rank highest indices
     alphabet = alpha[:]
     sorted_alphabet = [x for _, x in sorted(zip(summedCounts, alphabet))]
+
+    sorted_counts = [y for y, x in sorted(zip(summedCounts, alphabet))]
+    print(sorted_alphabet)
+    print(sorted_counts)
 
     #ask most probable letter
     for char in sorted_alphabet[::-1]:
@@ -228,7 +249,7 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
                 spacePositionCounter = 0
                 for i in range(len(lengths)-1):
                     spaceIndices[i] = lengths[i] + spacePositionCounter
-                    spacePositionCounter += spaceIndices + 1
+                    spacePositionCounter += spaceIndices[i] + 1
 
 
                 for position in temp[1:]:
@@ -246,6 +267,7 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
                     #spaces using lengths
                     #puncChars has the positions
                     word[position-numInFront] = char
+                    # print("position-numInFront: " + str(position-numInFront))
                 if char in noQuestions:
                     lieDetected = True
                     noQuestions.remove(char)
@@ -296,6 +318,10 @@ def countLetters(c, numWords, lengths, word, noChars):
                 regex += "."
             else:
                 regex += word[sum(lengths[:i])+x]
+        print("word: ")
+        print(word)
+        print(noChars)
+        print("regex: " + regex)
 
         for teststr in wordList:
             skipping = False
@@ -326,17 +352,24 @@ def checkLetter(c, i, numWords, lengths, word):
         else:
             regex += word[sum(lengths[:i])+x]
 
-    prev = -1
     for teststr in wordList:
+        prev = -1
+        found = False
+        checked = False
         if len(teststr) == len(regex) and re.match(regex, teststr):
+            if teststr.find(c) != -1:
+                found = True
             if teststr.find(c) == -1:
-                return (False, True)
-            if prev == -1:
+                if found:
+                    return False
+                else:
+                    checked = True
+            elif prev == -1 and not checked:
                 prev = teststr.find(c)
-            if teststr.find(c) != prev or teststr.rfind(c) != prev:
-                return (False, False)
+            elif teststr.find(c) != prev or teststr.rfind(c) != prev:
+                return False
 
-    return (True, True)
+    return True
 
 
 def isInt(number):
