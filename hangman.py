@@ -10,20 +10,20 @@ wordList.add("she's")
 alpha = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
          's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 
-numQuestions = 0
-numWords = 0
-lengths = []
-word = []
-lieDetected = False
-
-yesChars = [] # stores each letter which has been confirmed to be in the word/phrase
-# stores each letter which has been said is not in the word/phrase but is not confirmed to be or not
-# to be in the word/phrase
-noQuestions = []
-noChars = [] # stores each letter which has been confirmed to not be in the word/phrase
-
-
 def main():
+
+    numQuestions = 0
+    numWords = 0
+    lengths = []
+    word = []
+    lieDetected = False
+
+    yesChars = [] # stores each letter which has been confirmed to be in the word/phrase
+    # stores each letter which has been said is not in the word/phrase but is not confirmed to be or not
+    # to be in the word/phrase
+    noQuestions = []
+    noChars = [] # stores each letter which has been confirmed to not be in the word/phrase
+
     print("Hello! Welcome to Hangman, a game in which we attempt to not hang an entire person while hanging part of a person is ok.")
     print("Please enter the number of words in your selected word/phrase followed by the number of letters in each word (including punctuation that is part of the word), all separated by a space")
     print("(e.g. 3 3 7 5 could signify the phrase \"low hanging fruit\"): ")
@@ -37,13 +37,13 @@ def main():
             word.append("")
 
     print("Are there any punctuation marks in your words (e.g. hyphens or apostrophes but not including punctuation such as commas between words)? Please enter y/n")
-    temp = input()
-    if (temp[0].lower() == 'y'):
+    temp2 = sys.stdin.readline()[:-1]
+    if (temp2[0].lower() == 'y'):
         print("Please enter the punctuation character followed by each character position (when excluding spaces and punctuation between words) of that punctuation character, all separated by a space.")
         print("(e.g. \"' 3 10\" could signify \"it's, doesn't\"): ")
-        temp = sys.stdin.readline()[:-1].split(" ")
+        temp3 = list(sys.stdin.readline()[:-1].split(" "))
         char = ""
-        for x in temp:
+        for x in temp3:
             if x.isnumeric():
                 word[int(x)-1] = char
             else:
@@ -52,7 +52,7 @@ def main():
     done = False
 
     while not done:
-        askNextQuestion()
+        askNextQuestion(numQuestions, numWords, lengths, word, lieDetected)
         done = word.count("")==0
 
     ans = ""
@@ -64,8 +64,8 @@ def main():
     print("Your word is " + ans + "! We guessed your word in " + str(numQuestions) + " questions.")
 
 
-def askNextQuestion():
-    probabilities = countLetters("")
+def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected):
+    probabilities = countLetters("", numWords, lengths, word)
 
     # check if there's only one word possible then guess that if so
     if word.count("")==1:
@@ -84,11 +84,13 @@ def askNextQuestion():
                 #ruh roh
                 print("Error.")
             else:
-                return
+                return None
+
+        return None
 
     # convert each entry in probabilities into a probability
 
-    counter = [[0 for _ in range(26)] for _ in range(numWords)]
+    # counter = [[0 for _ in range(26)] for _ in range(numWords)]
 
     # iterate through noQuestions and run countLetters passing in the letter from that question
     # update counter accordingly
@@ -106,7 +108,7 @@ def askNextQuestion():
 # countLetters returns a numWords x 27 2D array which the first 26 entries are arrays of (number of
 # times that letter appears in a valid word, the number of words in which the letter appears) and of
 # which the last entry is the number of valid words
-def countLetters(c):
+def countLetters(c, numWords, lengths, word):
     ret = [[[0, 0] for _ in range(26)] for _ in range(numWords)]
     for i in range(numWords):
         ret[i].append(0)
@@ -117,12 +119,12 @@ def countLetters(c):
             else:
                 regex += word[sum(lengths[:i])+x]
 
-        for str in wordList:
-            if re.fullmatch(regex, str) and c in str:
-                ret[-1] += 1
+        for teststr in wordList:
+            if len(teststr) == len(regex) and re.match(regex, teststr) and c in teststr:
+                ret[i][-1] += 1
                 for j in range(26):
-                    if alpha[j] in str:
-                        ret[i][ord(alpha[j])-ord(alpha[0])][0] += str.count(alpha[j])
+                    if alpha[j] in teststr:
+                        ret[i][ord(alpha[j])-ord(alpha[0])][0] += teststr.count(alpha[j])
                         ret[i][ord(alpha[j])-ord(alpha[0])][1] += 1
 
     return ret
@@ -132,7 +134,7 @@ def countLetters(c):
 # i is the index of the word within which c has a 100% chance of being, corresponding to the
 # appropriate index within the lengths array
 # returns true if the letter is in the same unique position in each valid word, false otherwise
-def checkLetter(c, i):
+def checkLetter(c, i, numWords, lengths, word):
     regex = ""
     for x in range(lengths[i]):
         if word[sum(lengths[:i])+x] == "":
@@ -141,12 +143,12 @@ def checkLetter(c, i):
             regex += word[sum(lengths[:i])+x]
 
     prev = -1
-    for str in wordList:
-        if re.fullmatch(regex, str):
-            assert str.find(c) > -1
+    for teststr in wordList:
+        if len(teststr) == len(regex) and re.match(regex, teststr):
+            assert teststr.find(c) > -1
             if prev == -1:
-                prev = str.find(c)
-            if str.find(c) != prev or str.rfind(c) != prev:
+                prev = teststr.find(c)
+            if teststr.find(c) != prev or teststr.rfind(c) != prev:
                 return False
 
     return True
