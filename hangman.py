@@ -39,7 +39,7 @@ def main():
 
     print("Are there any punctuation marks in your words (e.g. hyphens or apostrophes but not including punctuation such as commas between words)? Please enter y/n")
     temp = input()
-    if (lower(temp[0]) == 'y'):
+    if (temp[0].lower() == 'y'):
         print("Please enter the punctuation character followed by each character position (when excluding spaces and punctuation between words) of that punctuation character, all separated by a space.")
         print("(e.g. \"' 3 10\" could signify \"it's, doesn't\"): ")
         temp = sys.stdin.readline()[:-1].split(" ")
