@@ -1,5 +1,6 @@
 from english_words import english_words_lower_set
 import re
+import sys
 
 wordList = english_words_lower_set
 wordList.add("it's")
@@ -27,7 +28,7 @@ def main():
     print("Please enter the number of words in your selected word/phrase followed by the number of letters in each word (including punctuation that is part of the word), all separated by a space")
     print("(e.g. 3 3 7 5 could signify the phrase \"low hanging fruit\"): ")
 
-    temp = map(int, input().split(" "))
+    temp = map(int, sys.stdin.readline()[:-1].split(" "))
     print(type(temp))
     numWords = temp[0]
     lengths = temp[1:]
@@ -41,7 +42,7 @@ def main():
     if (lower(temp[0]) == 'y'):
         print("Please enter the punctuation character followed by each character position (when excluding spaces and punctuation between words) of that punctuation character, all separated by a space.")
         print("(e.g. \"' 3 10\" could signify \"it's, doesn't\"): ")
-        temp = input().split(" ")
+        temp = sys.stdin.readline()[:-1].split(" ")
         char = ""
         for x in temp:
             if x.isnumeric():
