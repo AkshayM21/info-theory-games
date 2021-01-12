@@ -18,10 +18,14 @@ def main():
     word = []
     lieDetected = False
 
+    puncChars = [] # stores an array of tuples of (character position in the final word/phrase,
+                   # punctuation mark)
+
     yesChars = [] # stores each letter which has been confirmed to be in the word/phrase
-    # stores each letter which has been said is not in the word/phrase but is not confirmed to be or not
-    # to be in the word/phrase
-    noQuestions = []
+
+    noQuestions = [] # stores each letter which has been said is not in the word/phrase but is not
+                     # confirmed to be or not to be in the word/phrase
+
     noChars = [] # stores each letter which has been confirmed to not be in the word/phrase
 
     print("Hello! Welcome to Hangman, a game in which we attempt to not hang an entire person while hanging part of a person is ok.")
@@ -36,10 +40,10 @@ def main():
         for j in range(lengths[i]):
             word.append("")
 
-    print("Are there any punctuation marks in your words (e.g. hyphens or apostrophes but not including punctuation such as commas between words)? Please enter y/n")
+    print("Are there any punctuation marks in your words (e.g. apostrophes but not including punctuation such as commas between words)? Please enter y/n: ")
     temp2 = sys.stdin.readline()[:-1]
     if (temp2[0].lower() == 'y'):
-        print("Please enter the punctuation character followed by each character position (when excluding spaces and punctuation between words) of that punctuation character, all separated by a space.")
+        print("Please enter the punctuation character followed by each character position (1-indexed, when excluding spaces and punctuation between words) of that punctuation character, all separated by a space")
         print("(e.g. \"' 3 10\" could signify \"it's, doesn't\"): ")
         temp3 = list(sys.stdin.readline()[:-1].split(" "))
         char = ""
@@ -49,6 +53,20 @@ def main():
             else:
                 char = x
 
+    print("Are there any punctuation marks in between your words (e.g. commas or an exclamation point at the end)? (y/n): ")
+    temp4 = sys.stdin.readline()[:-1]
+    if (temp4[0].lower() == 'y'):
+        print("Please enter the punctuation character followed by each character position (1-indexed, when including spaces and punctuation between words) of that punctuation character, all separated by a space")
+        print("(e.g. \", 6 11\" could signify \"hello, bob,\"): ")
+        temp5 = list(sys.stdin.readline()[:-1].split(" "))
+        char = ""
+        for x in temp5:
+            if x.isnumeric():
+                puncChars.append((int(x)-1, char))
+            else:
+                char = x
+    puncChars.sort()
+
     done = False
 
     while not done:
@@ -56,10 +74,19 @@ def main():
         done = word.count("")==0
 
     ans = ""
+    charCount = 0
+    currPuncPos = 0
     for i in range(numWords):
         for j in range(lengths[i]):
             ans += word[sum(lengths[:i])+j]
+            charCount += 1
+        if (currPuncPos < len(puncChars) and charCount == puncChars[currPuncPos][0]):
+            ans += puncChars[currPuncPos][1]
+            charCount += 1
+            currPuncPos += 1
+        assert currPuncPos >= len(puncChars) or charCount < puncChars[currPuncPos][0]
         ans += " "
+        charCount += 1
 
     print("Your word is " + ans + "! We guessed your word in " + str(numQuestions) + " questions.")
 
