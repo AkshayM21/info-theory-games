@@ -65,4 +65,10 @@ def countLetters(c):
 
     return ret
 
+# check if letter given 100% prob is in same position in each word
+def checkLetter(c):
+    ret = true
+
+    return ret
+
 
