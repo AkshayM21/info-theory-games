@@ -318,10 +318,10 @@ def countLetters(c, numWords, lengths, word, noChars):
                 regex += "."
             else:
                 regex += word[sum(lengths[:i])+x]
-        print("word: ")
-        print(word)
-        print(noChars)
-        print("regex: " + regex)
+        # print("word: ")
+        # print(word)
+        # print(noChars)
+        # print("regex: " + regex)
 
         for teststr in wordList:
             skipping = False
