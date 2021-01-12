@@ -23,7 +23,7 @@ noChars = [] # stores each letter which has been confirmed to not be in the word
 
 def main():
     print("Hello! Welcome to Hangman, a game in which we attempt to not hang an entire person while hanging part of a person is ok.")
-    print("Please enter the number of words in your selected word/phrase followed by the number of letters in each word, all separated by a space")
+    print("Please enter the number of words in your selected word/phrase followed by the number of letters in each word (including punctuation that is part of the word), all separated by a space")
     print("(e.g. 3 3 7 5 could signify the phrase \"low hanging fruit\"): ")
 
     temp = map(int, input().split(" "))
@@ -33,7 +33,19 @@ def main():
     for i in range(numWords):
         for j in range(lengths[i]):
             word.append("")
-        word.append(" ")
+
+    print("Are there any punctuation marks in your words (e.g. hyphens or apostrophes but not including punctuation such as commas between words)? Please enter y/n")
+    temp = input()
+    if (lower(temp[0]) == 'y'):
+        print("Please enter the punctuation character followed by each character position (when excluding spaces and punctuation between words) of that punctuation character, all separated by a space.")
+        print("(e.g. \"' 3 10\" could signify \"it's, doesn't\"): ")
+        temp = input().split(" ")
+        char = ""
+        for x in temp:
+            if x.isnumeric():
+                word[int(x)-1] = char
+            else:
+                char = x
 
     done = False
 
@@ -42,8 +54,10 @@ def main():
         done = word.count("")==0
 
     ans = ""
-    for i in range(len(word)):
-        ans += word[i]
+    for i in range(numWords):
+        for j in range(lengths[i]):
+            ans += word[sum(lengths[:i]+j)]
+        ans += " "
 
     print("Your word is " + ans + "! We guessed your word in " + str(numQuestions) + " questions.")
 
@@ -63,7 +77,7 @@ def askNextQuestion():
     # ask the next question about the letter with the maximum counter value
     # check if the letter is in noQuestions to detect a lie (and update lieDetected if needed)
     # update noQuestions if no
-    # update word with the appropriate positions if the answer is yes
+    # update word and yesChars with the appropriate positions/chars if the answer is yes
 
 
 
