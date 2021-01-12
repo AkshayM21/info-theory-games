@@ -21,12 +21,14 @@ yesChars = [] # stores each letter which has been confirmed to be in the word/ph
 noQuestions = []
 noChars = [] # stores each letter which has been confirmed to not be in the word/phrase
 
+
 def main():
     print("Hello! Welcome to Hangman, a game in which we attempt to not hang an entire person while hanging part of a person is ok.")
     print("Please enter the number of words in your selected word/phrase followed by the number of letters in each word (including punctuation that is part of the word), all separated by a space")
     print("(e.g. 3 3 7 5 could signify the phrase \"low hanging fruit\"): ")
 
     temp = map(int, input().split(" "))
+    print(type(temp))
     numWords = temp[0]
     lengths = temp[1:]
 
@@ -56,7 +58,7 @@ def main():
     ans = ""
     for i in range(numWords):
         for j in range(lengths[i]):
-            ans += word[sum(lengths[:i]+j)]
+            ans += word[sum(lengths[:i])+j]
         ans += " "
 
     print("Your word is " + ans + "! We guessed your word in " + str(numQuestions) + " questions.")
@@ -66,6 +68,24 @@ def askNextQuestion():
     probabilities = countLetters("")
 
     # check if there's only one word possible then guess that if so
+    if word.count("")==1:
+        numZeros = 0
+        nonZeroCount = 0
+        for count in probabilities[word.index("")]:
+            if count==0:
+                numZeros += 1
+            else:
+                nonZeroCount += count
+        if numZeros==25: #magic number but basically checking if there's only 1 letter possible)
+            print("Is the remaining letter "+str(alpha[probabilities[word.index("")].index(nonZeroCount)])+"?")
+            temp = input()
+            numQuestions += 1
+            if (lower(temp[0]) == 'n'):
+                #ruh roh
+                print("Error.")
+            else:
+
+            return
 
     # convert each entry in probabilities into a probability
 
@@ -132,4 +152,6 @@ def checkLetter(c, i):
 
     return True
 
+
+main()
 
