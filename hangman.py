@@ -1,9 +1,13 @@
 from english_words import english_words_lower_set
+import re
 
 wordList = english_words_lower_set
 wordList.add("it's")
 wordList.add("he's")
 wordList.add("she's")
+
+alpha = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
+         's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 
 numQuestions = 0
 numWords = 0
@@ -11,9 +15,11 @@ lengths = []
 word = []
 lieDetected = False
 
+yesChars = [] # stores each letter which has been confirmed to be in the word/phrase
 # stores each letter which has been said is not in the word/phrase but is not confirmed to be or not
 # to be in the word/phrase
 noQuestions = []
+noChars = [] # stores each letter which has been confirmed to not be in the word/phrase
 
 def main():
     print("Hello! Welcome to Hangman, a game in which we attempt to not hang an entire person while hanging part of a person is ok.")
@@ -44,7 +50,10 @@ def main():
 
 def askNextQuestion():
     probabilities = countLetters("")
-    # convert each entry into a probability
+
+    # check if there's only one word possible then guess that if so
+
+    # convert each entry in probabilities into a probability
 
     counter = [[0 for _ in range(26)] for _ in range(numWords)]
 
@@ -54,7 +63,7 @@ def askNextQuestion():
     # ask the next question about the letter with the maximum counter value
     # check if the letter is in noQuestions to detect a lie (and update lieDetected if needed)
     # update noQuestions if no
-    # update word if the answer is yes
+    # update word with the appropriate positions if the answer is yes
 
 
 
@@ -66,18 +75,47 @@ def askNextQuestion():
 # which the last entry is the number of valid words
 def countLetters(c):
     ret = [[[0, 0] for _ in range(26)] for _ in range(numWords)]
-    for x in range(numWords):
-        ret[x].append(0)
+    for i in range(numWords):
+        ret[i].append(0)
+        regex = ""
+        for x in range(lengths[i]):
+            if word[sum(lengths[:i])+x] == "":
+                regex += "."
+            else:
+                regex += word[sum(lengths[:i])+x]
 
-    
-
+        for str in wordList:
+            if re.fullmatch(regex, str) and c in str:
+                ret[-1] += 1
+                for j in range(26):
+                    if alpha[j] in str:
+                        ret[i][ord(alpha[j])-ord(alpha[0])][0] += str.count(alpha[j])
+                        ret[i][ord(alpha[j])-ord(alpha[0])][1] += 1
 
     return ret
 
-# check if letter given 100% prob is in same position in each word
-def checkLetter(c):
-    ret = true
+# check if letter given 100% prob is in same position in each possible valid word
+# c is the input letter
+# i is the index of the word within which c has a 100% chance of being, corresponding to the
+# appropriate index within the lengths array
+# returns true if the letter is in the same unique position in each valid word, false otherwise
+def checkLetter(c, i):
+    regex = ""
+    for x in range(lengths[i]):
+        if word[sum(lengths[:i])+x] == "":
+            regex += "."
+        else:
+            regex += word[sum(lengths[:i])+x]
 
-    return ret
+    prev = -1
+    for str in wordList:
+        if re.fullmatch(regex, str):
+            assert str.find(c) > -1
+            if prev == -1:
+                prev = str.find(c)
+            if str.find(c) != prev or str.rfind(c) != prev:
+                return False
+
+    return True
 
 
