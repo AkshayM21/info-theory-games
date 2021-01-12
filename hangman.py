@@ -28,8 +28,7 @@ def main():
     print("Please enter the number of words in your selected word/phrase followed by the number of letters in each word (including punctuation that is part of the word), all separated by a space")
     print("(e.g. 3 3 7 5 could signify the phrase \"low hanging fruit\"): ")
 
-    temp = map(int, sys.stdin.readline()[:-1].split(" "))
-    print(type(temp))
+    temp = list(map(int, sys.stdin.readline()[:-1].split(" ")))
     numWords = temp[0]
     lengths = temp[1:]
 
@@ -85,8 +84,7 @@ def askNextQuestion():
                 #ruh roh
                 print("Error.")
             else:
-
-            return
+                return
 
     # convert each entry in probabilities into a probability
 
