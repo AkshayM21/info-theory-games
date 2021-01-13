@@ -1,11 +1,9 @@
-from english_words import english_words_lower_set
 import re
 import sys
 
-wordList = english_words_lower_set
-wordList.add("it's")
-wordList.add("he's")
-wordList.add("she's")
+wordList = []
+with open('word_list.txt') as filein:
+    wordList = set(filein.read().split())
 
 alpha = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
          's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
@@ -88,7 +86,7 @@ def main():
         ans += " "
         charCount += 1
 
-    print("Your word is " + ans[:-1] + "! We guessed your word in " + str(numQuestions) + " questions.")
+    print("Your word/phrase is \"" + ans[:-1] + "\"! We guessed your word in " + str(numQuestions) + " questions.")
 
 
 def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuestions, noChars, yesChars, puncChars):
