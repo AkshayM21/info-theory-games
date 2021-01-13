@@ -88,7 +88,7 @@ def main():
         ans += " "
         charCount += 1
 
-    print("Your word is " + ans + "! We guessed your word in " + str(numQuestions) + " questions.")
+    print("Your word is " + ans[:-1] + "! We guessed your word in " + str(numQuestions) + " questions.")
 
 
 def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuestions, noChars, yesChars, puncChars):
@@ -138,6 +138,9 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
     # guaranteed = []
     for i in range(numWords):
         for j in range(26):
+            if probabilities[i][26] == 0:
+                print("Error: word/phrase not in local dictionary.")
+                sys.exit()
             probabilities[i][j][0] = float(probabilities[i][j][0]) / probabilities[i][26]
             # if i == 0 and probabilities[i][j][1] == probabilities[i][26]:
             #     guaranteed.append(alpha[j])
