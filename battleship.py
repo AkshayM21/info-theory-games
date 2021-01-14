@@ -60,9 +60,9 @@ def getMostProbablePosition(grid, remainingShips):
                 x = j
                 y = i
 
-    print("freq:")
-    print(freq)
-    print("(x, y): (" + str(x) + ", " + str(y) + ")")
+    # print("freq:")
+    # print(freq)
+    # print("(x, y): (" + str(x) + ", " + str(y) + ")")
 
     return (x, y)
 
