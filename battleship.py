@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 
 coordDeltas = ((0, 1), (0, -1), (1, 0), (-1, 0))
 
