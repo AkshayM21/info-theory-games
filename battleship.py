@@ -96,20 +96,21 @@ def sinkShip(shipCoords, grid, numQuestions, remainingShips):
         if(shipLengths==None):
             x = position[0]
             y = position[1]
-            isHit = input("Question " + str(numQuestions + questionsAsked+ 1) + ": Is the coordinate <" + str(x + 1) + ", " + str(
-                y + 1) + "> a hit or a miss? Please enter \"hit\" or \"miss\": ")
+            print("Question " + str(numQuestions + questionsAsked+ 1) + ": Is the coordinate <" + str(x + 1) + ", " + str(
+                y + 1) + "> a hit or a miss? Please enter \"hit\" or \"miss\", and, if a ship has been sunk, please enter the length of the sunk ship separated by a space (e.g. \"hit 4\"): ")
+            isHit = list(sys.stdin.readline()[:-1].split(" "))
             questionsAsked += 1
-            if isHit[0].lower() == 'h':
+            if isHit[0][0].lower() == 'h':
                 grid[y, x] = 2
                 shipCoords.append(position)
-                sunkAnswer = list(input("Is a ship sunk? Reply with yes/no. If so, also put the length of the ship sunk (e.g, \"yes 3\"): ").split(" "))
                 # print(sunkAnswer)
-                if sunkAnswer[0][0].lower() == 'y':
+                if len(isHit) > 1:
                     # print("yay fully sunk")
                     #ship sunk
                     isSink = True
                     #check if more coordinates
-                    shipLength = int(sunkAnswer[1])
+                    assert isHit[1].isnumeric()
+                    shipLength = int(isHit[1])
                     # print("this is ship length "+str(shipLength))
                     # print("shipcoord length "+str(len(shipCoords)))
                     #check vertical/horizontal
