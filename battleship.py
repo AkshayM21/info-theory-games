@@ -9,12 +9,14 @@ def main():
 
     while not finished:
         (x, y) = getMostProbablePosition(grid, remainingShips)
-        isHit = input("Question " + str(numQuestions) + ": Is the coordinate <"+str(x)+", "+str(y)+"> a hit or a miss? Please enter \"hit\" or \"miss\": ")
+        isHit = input("Question " + str(numQuestions+1) + ": Is the coordinate <"+str(x+1)+", "+str(y+1)+"> a hit or a miss? Please enter \"hit\" or \"miss\": ")
         numQuestions += 1
         if isHit[0].lower() == 'h':
             (grid, shipLength, questionsAsked) = sinkShip(x, y, grid)
             remainingShips.remove(shipLength)
             numQuestions += questionsAsked
+        else:
+            grid[y, x] = 1
 
         finished = len(remainingShips)==0
 
@@ -58,12 +60,11 @@ def getMostProbablePosition(grid, remainingShips):
                 x = j
                 y = i
 
-    # print("freq:")
-    # print(freq)
-    # print("(x, y): (" + str(x) + ", " + str(y) + ")")
+    print("freq:")
+    print(freq)
+    print("(x, y): (" + str(x) + ", " + str(y) + ")")
 
-    # x and y have been incremented here to translate them back into the 1-index question
-    return (x+1, y+1)
+    return (x, y)
 
 # be wary of the edge case in which we hit (a) different ship(s) than the one first hit -- then we
 # need to sink all of the ships that were hit -- could do this by maintaining a set of the
