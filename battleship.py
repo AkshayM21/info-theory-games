@@ -8,7 +8,7 @@ def main():
     numQuestions = 0
     finished = False
     grid = np.array([[0 for _ in range(10)] for _ in range(10)]) # 0 = unchecked, 1 = miss, 2 = hit
-    remainingShips = np.array([5, 4, 3, 3, 2])
+    remainingShips = [5, 4, 3, 3, 2]
 
     while not finished:
         (x, y) = getMostProbablePosition(grid, remainingShips)
@@ -97,36 +97,49 @@ def sinkShip(shipCoords, grid, numQuestions, remainingShips):
             if isHit[0].lower() == 'h':
                 grid[y, x] = 2
                 shipCoords.append(position)
-                sunkQuestion = input("Is the ship sunk? Reply with yes/no. If it has, also put the length of the ship (e.g, \"yes 3\").")
-                sunkAnswer = list(sys.stdin.readline()[:-1].split(" "))
+                sunkAnswer = list(input("Is the ship sunk? Reply with yes/no. If it has, also put the length of the ship (e.g, \"yes 3\").").split(" "))
+                # print(sunkAnswer)
                 if sunkAnswer[0][0].lower() == 'y':
+                    # print("yay fully sunk")
                     #ship sunk
                     isSink = True
                     #check if more coordinates
                     shipLength = int(sunkAnswer[1])
+                    # print("this is ship length "+str(shipLength))
+                    # print("shipcoord length "+str(len(shipCoords)))
                     #check vertical/horizontal
                     # if the coords are in a vertical line
                     if shipLength != len(shipCoords):
                         #start from current position, figure out if any of the other positions are current length away from this one, go in that direction
                         #up shipLength
                         if (x, y-(shipLength-1)) in shipCoords:
+                            # print("it's up")
                             for i in range(shipLength):
                                 shipCoords.remove((x, y-i))
+                            # print("done")
                         #down shipLength
                         elif (x, y+(shipLength-1)) in shipCoords:
+                            # print("it's down")
                             for i in range(shipLength):
                                 shipCoords.remove((x, y+i))
+                            # print("done")
                         #left shipLength
                         elif (x-(shipLength-1), y) in shipCoords:
+                            # print("it's left")
                             for i in range(shipLength):
                                 shipCoords.remove((x-i, y))
+                            # print("done")
                         #right shiplength
                         else:
+                            # print("it's right")
                             for i in range(shipLength):
                                 shipCoords.remove((x+i, y))
+                            # print("done")
+
                         (grid, addlShipLength, moreQuestions) = sinkShip(shipCoords, grid, numQuestions+questionsAsked, remainingShips)
                         return (grid, [shipLength]+addlShipLength, questionsAsked+moreQuestions)
                     else:
+                        # print("returning...")
                         return (grid, [shipLength], questionsAsked)
             else:
                 grid[y, x] = 1
