@@ -16,7 +16,7 @@ def main():
         if isHit[0].lower() == 'h':
             grid[y, x] = 2
             shipCoords = [(x, y)]
-            (grid, shipLength, questionsAsked) = sinkShip(shipCoords, grid, numQuestions)
+            (grid, shipLength, questionsAsked) = sinkShip(shipCoords, grid, numQuestions, remainingShips)
             for length in shipLength:
                 remainingShips.remove(length)
             numQuestions += questionsAsked
@@ -76,7 +76,7 @@ def getMostProbablePosition(grid, remainingShips):
 # that are a part of the sunken ship, and if there are any positions left in that list, re-run
 # sinkShip with those positions as an input
 # that would probably also require moving the removal of ships from remainingShips to this function
-def sinkShip(shipCoords, grid, numQuestions):
+def sinkShip(shipCoords, grid, numQuestions, remainingShips):
     #need to update grid
     #ask questions in loop -- if it is a hit and if it is a sink
     #keep independent track of hits versus misses
@@ -86,7 +86,7 @@ def sinkShip(shipCoords, grid, numQuestions):
     isSink = False
 
     while not isSink:
-        (position, shipLengths) = sinkShipGetMostProbablePosition(shipCoords, grid, numQuestions)
+        (position, shipLengths) = sinkShipGetMostProbablePosition(shipCoords, grid, numQuestions, remainingShips)
         if(shipLengths==None):
             x = position[0]
             y = position[1]
@@ -123,7 +123,7 @@ def sinkShip(shipCoords, grid, numQuestions):
                         else:
                             for i in range(shipLength):
                                 shipCoords.remove((x+i, y))
-                        (grid, addlShipLength, moreQuestions) = sinkShip(shipCoords, grid, numQuestions+questionsAsked)
+                        (grid, addlShipLength, moreQuestions) = sinkShip(shipCoords, grid, numQuestions+questionsAsked, remainingShips)
                         return (grid, [shipLength]+addlShipLength, questionsAsked+moreQuestions)
                     else:
                         return (grid, [shipLength], questionsAsked)
@@ -148,7 +148,7 @@ def sinkShip(shipCoords, grid, numQuestions):
 # returns the most probable position for the next part of the given ship
 # shipCoords is a list (NON-NUMPY for the sort to work properly) of tuples of the (x, y) positions
 # of the current shipCoords we have returns (x, y) of the most probable position
-def sinkShipGetMostProbablePosition(shipCoords, grid, numQuestions):
+def sinkShipGetMostProbablePosition(shipCoords, grid, numQuestions, remainingShips):
     shipCoords.sort()
 
     freq = []
@@ -230,7 +230,7 @@ def sinkShipGetMostProbablePosition(shipCoords, grid, numQuestions):
             additionalQuestions = 0
             shipLengths = []
             for shipCoord in shipCoords:
-                (grid, shipLength, questionsAsked) = sinkShip(shipCoord, grid, numQuestions+additionalQuestions)
+                (grid, shipLength, questionsAsked) = sinkShip(shipCoord, grid, numQuestions+additionalQuestions, remainingShips)
                 additionalQuestions+= questionsAsked
                 if(len(shipLength)==1):
                     shipLengths.append(shipLength)
