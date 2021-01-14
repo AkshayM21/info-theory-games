@@ -166,6 +166,7 @@ def sinkShipGetMostProbablePosition(shipCoords, grid):
         if (freq[0] == 0 and freq[1] == 0):
             for shipCoord in shipCoords:
                 sinkShip(shipCoord, grid)
+            return None
 
         if (freq[1] > freq[0]):
             return checkCoords[1]
