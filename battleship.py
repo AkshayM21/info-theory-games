@@ -15,8 +15,10 @@ def main():
         numQuestions += 1
         if isHit[0].lower() == 'h':
             grid[y, x] = 2
-            (grid, shipLength, questionsAsked) = sinkShip(x, y, grid)
-            remainingShips.remove(shipLength)
+            shipCoords = [(x, y)]
+            (grid, shipLength, questionsAsked) = sinkShip(shipCoords, grid, numQuestions)
+            for length in shipLength:
+                remainingShips.remove(length)
             numQuestions += questionsAsked
         else:
             grid[y, x] = 1
@@ -74,19 +76,79 @@ def getMostProbablePosition(grid, remainingShips):
 # that are a part of the sunken ship, and if there are any positions left in that list, re-run
 # sinkShip with those positions as an input
 # that would probably also require moving the removal of ships from remainingShips to this function
-def sinkShip(shipCoords, grid):
+def sinkShip(shipCoords, grid, numQuestions):
     #need to update grid
     #ask questions in loop -- if it is a hit and if it is a sink
     #keep independent track of hits versus misses
 
-    shipLength = 4 #arbitrary//placeholder
-    questionsAsked = 4
-    return (grid, shipLength, questionsAsked)
+    questionsAsked = 0
+
+    isSink = False
+
+    while not isSink:
+        (position, shipLengths) = sinkShipGetMostProbablePosition(shipCoords, grid, numQuestions)
+        if(shipLengths==None):
+            x = position[0]
+            y = position[1]
+            isHit = input("Question " + str(numQuestions + questionsAsked+ 1) + ": Is the coordinate <" + str(x + 1) + ", " + str(
+                y + 1) + "> a hit or a miss? Please enter \"hit\" or \"miss\": ")
+            questionsAsked += 1
+            if isHit[0].lower() == 'h':
+                grid[y, x] = 2
+                shipCoords.append(position)
+                sunkQuestion = input("Is the ship sunk? Reply with yes/no. If it has, also put the length of the ship (e.g, \"yes 3\").")
+                sunkAnswer = list(sys.stdin.readline()[:-1].split(" "))
+                if sunkAnswer[0][0].lower() == 'y':
+                    #ship sunk
+                    isSink = True
+                    #check if more coordinates
+                    shipLength = int(sunkAnswer[1])
+                    #check vertical/horizontal
+                    # if the coords are in a vertical line
+                    if shipLength != len(shipCoords):
+                        #start from current position, figure out if any of the other positions are current length away from this one, go in that direction
+                        #up shipLength
+                        if (x, y-(shipLength-1)) in shipCoords:
+                            for i in range(shipLength):
+                                shipCoords.remove((x, y-i))
+                        #down shipLength
+                        elif (x, y+(shipLength-1)) in shipCoords:
+                            for i in range(shipLength):
+                                shipCoords.remove((x, y+i))
+                        #left shipLength
+                        elif (x-(shipLength-1), y) in shipCoords:
+                            for i in range(shipLength):
+                                shipCoords.remove((x-i, y))
+                        #right shiplength
+                        else:
+                            for i in range(shipLength):
+                                shipCoords.remove((x+i, y))
+                        (grid, addlShipLength, moreQuestions) = sinkShip(shipCoords, grid, numQuestions+questionsAsked)
+                        return (grid, [shipLength]+addlShipLength, questionsAsked+moreQuestions)
+                    else:
+                        return (grid, [shipLength], questionsAsked)
+            else:
+                grid[y, x] = 1
+        else:
+            #all the questions have already been asked
+            #position is actually questionsAsked
+            return (grid, shipLengths, position)
+
+    #ask questions using helper method
+        #check output -- if its a tuple then go ahead, if its a number then hte sink ships have been finished and return w/o any printing out
+    #if its a hit, mark with grid =2 and put in ship coords
+    #perhaps ask follow up if its a sink?
+    #if its not a hit, mark with grid = 1
+    #if you sink a ship and there are more coordinates then run sink ship again
+    #if its two verticals or two horizontals next to eahc other (not head to tail) then the helper method takes care of it
+    #so return none means just return? since it already get returned
+
+    return (grid, [None], questionsAsked)
 
 # returns the most probable position for the next part of the given ship
 # shipCoords is a list (NON-NUMPY for the sort to work properly) of tuples of the (x, y) positions
 # of the current shipCoords we have returns (x, y) of the most probable position
-def sinkShipGetMostProbablePosition(shipCoords, grid):
+def sinkShipGetMostProbablePosition(shipCoords, grid, numQuestions):
     shipCoords.sort()
 
     freq = []
@@ -94,6 +156,7 @@ def sinkShipGetMostProbablePosition(shipCoords, grid):
         freq = np.array([0 for _ in range(4)])
     else:
         freq = np.array([0 for _ in range(2)])
+
 
     if len(shipCoords) == 1:
         # check the freq of the spots all around (x, y)
@@ -126,7 +189,7 @@ def sinkShipGetMostProbablePosition(shipCoords, grid):
             if freq[ind] > freq[maxInd]:
                 maxInd = ind
 
-        return (x+coordDeltas[maxInd][0], y+coordDeltas[maxInd][1])
+        return ((x+coordDeltas[maxInd][0], y+coordDeltas[maxInd][1]), None)
 
     # the coords must be in a horizontal or vertical line
     else:
@@ -164,12 +227,19 @@ def sinkShipGetMostProbablePosition(shipCoords, grid):
                             freq[ind] += 1
 
         if (freq[0] == 0 and freq[1] == 0):
+            additionalQuestions = 0
+            shipLengths = []
             for shipCoord in shipCoords:
-                sinkShip(shipCoord, grid)
-            return None
+                (grid, shipLength, questionsAsked) = sinkShip(shipCoord, grid, numQuestions+additionalQuestions)
+                additionalQuestions+= questionsAsked
+                if(len(shipLength)==1):
+                    shipLengths.append(shipLength)
+                else:
+                    shipLengths = shipLengths + shipLength
+            return (additionalQuestions, shipLengths)
 
         if (freq[1] > freq[0]):
-            return checkCoords[1]
-        return checkCoords[0]
+            return (checkCoords[1], None)
+        return (checkCoords[0], None)
 
 main()
