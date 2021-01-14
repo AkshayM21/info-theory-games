@@ -1,11 +1,13 @@
 import numpy as np
 
+coordDeltas = ((0, 1), (0, -1), (1, 0), (-1, 0))
+
 def main():
     print("Hello! Welcome to Battleship. This game is designed for a user who is playing with ships of size 5, 4, 3 (2 ships), and 2. The grid is 10 x 10, numbered from 1 through 10 (1-indexed).")
     numQuestions = 0
     finished = False
     grid = np.array([[0 for _ in range(10)] for _ in range(10)]) # 0 = unchecked, 1 = miss, 2 = hit
-    remainingShips = [5, 4, 3, 3, 2]
+    remainingShips = np.array([5, 4, 3, 3, 2])
 
     while not finished:
         (x, y) = getMostProbablePosition(grid, remainingShips)
@@ -23,7 +25,6 @@ def main():
     print("All your ships have been sunk! There were a total of "+str(numQuestions)+" asked.")
 
 def getMostProbablePosition(grid, remainingShips):
-
     freq = np.array([[0 for _ in range(10)] for _ in range(10)])
 
     # calculates the total number of ways a ship could go through each point
@@ -80,5 +81,88 @@ def sinkShip(x, y, grid):
     shipLength = 4 #arbitrary//placeholder
     questionsAsked = 4
     return (grid, shipLength, questionsAsked)
+
+# returns the most probable position for the next part of the given ship
+# shipCoords is a list (NON-NUMPY for the sort to work properly) of tuples of the (x, y) positions
+# of the current shipCoords we have returns (x, y) of the most probable position
+def sinkShipGetMostProbablePosition(shipCoords, grid):
+    shipCoords.sort()
+
+    freq = []
+    if (len(shipCoords) == 1):
+        freq = np.array([0 for _ in range(4)])
+    else:
+        freq = np.array([0 for _ in range(2)])
+
+    if len(shipCoords) == 1:
+        # check the freq of the spots all around (x, y)
+        (x, y) = shipCoords[0]
+        for shipLength in remainingShips:
+            for ind in range(len(coordDeltas)):
+                i = y + coordDeltas[ind][1]
+                j = x + coordDeltas[ind][0]
+                if i < 0 or i >= 10 or j < 0 or j >= 10 or grid[i, j] != 0:
+                    continue
+                for delta in range(shipLength):
+                    # checking horizontal orientations of the current ship through the current point
+                    if j+delta-shipLength+1 >= 0 and j+delta < 10:
+                        valid = True
+                        for temp in range(j+delta-shipLength+1, j+delta+1):
+                            if (temp, i) not in shipCoords and grid[i, temp] != 0:
+                                valid = False
+                        if valid:
+                            freq[ind] += 1
+                    # checking vertical orientations of the current ship through the current point
+                    if i+delta-shipLength+1 >= 0 and i+delta < 10:
+                        valid = True
+                        for temp in range(i+delta-shipLength+1, i+delta+1):
+                            if (j, temp) not in shipCoords and grid[temp, j] != 0:
+                                valid = False
+                        if valid:
+                            freq[ind] += 1
+        maxInd = 0
+        for ind in range(len(coordDeltas)):
+            if freq[ind] > freq[maxInd]:
+                maxInd = ind
+
+        return (x+coordDeltas[maxInd][0], y+coordDeltas[maxInd][1])
+
+    # the coords must be in a horizontal or vertical line
+    else:
+        checkCoords = []
+        # if the coords are in a vertical line
+        if shipCoords[0][0] == shipCoords[-1][0]:
+            checkCoords = [(shipCoords[0][0], shipCoords[0][1]-1), (shipCoords[-1][0], shipCoords[-1][1]+1)]
+        # if the coords are in a horizontal line
+        else:
+            assert shipCoords[0][1] == shipCoords[-1][1]
+            checkCoords = [(shipCoords[0][0]-1, shipCoords[0][1]), (shipCoords[-1][0]+1, shipCoords[-1][1])]
+
+        for ind in range(len(checkCoords)):
+            i = checkCoords[ind][1]
+            j = checkCoords[ind][0]
+            for shipLength in remainingShips:
+                if i < 0 or i >= 10 or j < 0 or j >= 10 or grid[i, j] != 0:
+                    continue
+                for delta in range(shipLength):
+                    # checking horizontal orientations of the current ship through the current point
+                    if j+delta-shipLength+1 >= 0 and j+delta < 10:
+                        valid = True
+                        for temp in range(j+delta-shipLength+1, j+delta+1):
+                            if (temp, i) not in shipCoords and grid[i, temp] != 0:
+                                valid = False
+                        if valid:
+                            freq[ind] += 1
+                    # checking vertical orientations of the current ship through the current point
+                    if i+delta-shipLength+1 >= 0 and i+delta < 10:
+                        valid = True
+                        for temp in range(i+delta-shipLength+1, i+delta+1):
+                            if (j, temp) not in shipCoords and grid[temp, j] != 0:
+                                valid = False
+                        if valid:
+                            freq[ind] += 1
+        if (freq[1] > freq[0]):
+            return checkCoords[1]
+        return checkCoords[0]
 
 main()
