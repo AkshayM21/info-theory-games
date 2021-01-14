@@ -14,6 +14,7 @@ def main():
         isHit = input("Question " + str(numQuestions+1) + ": Is the coordinate <"+str(x+1)+", "+str(y+1)+"> a hit or a miss? Please enter \"hit\" or \"miss\": ")
         numQuestions += 1
         if isHit[0].lower() == 'h':
+            grid[y, x] = 2
             (grid, shipLength, questionsAsked) = sinkShip(x, y, grid)
             remainingShips.remove(shipLength)
             numQuestions += questionsAsked
@@ -73,7 +74,7 @@ def getMostProbablePosition(grid, remainingShips):
 # that are a part of the sunken ship, and if there are any positions left in that list, re-run
 # sinkShip with those positions as an input
 # that would probably also require moving the removal of ships from remainingShips to this function
-def sinkShip(x, y, grid):
+def sinkShip(shipCoords, grid):
     #need to update grid
     #ask questions in loop -- if it is a hit and if it is a sink
     #keep independent track of hits versus misses
@@ -161,6 +162,11 @@ def sinkShipGetMostProbablePosition(shipCoords, grid):
                                 valid = False
                         if valid:
                             freq[ind] += 1
+
+        if (freq[0] == 0 and freq[1] == 0):
+            for shipCoord in shipCoords:
+                sinkShip(shipCoord, grid)
+
         if (freq[1] > freq[0]):
             return checkCoords[1]
         return checkCoords[0]
