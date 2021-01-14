@@ -19,14 +19,19 @@ def main():
             shipCoords = [(x, y)]
             (grid, shipLength, questionsAsked) = sinkShip(shipCoords, grid, numQuestions, remainingShips)
             for length in shipLength:
+                assert length in remainingShips
                 remainingShips.remove(length)
+            # print("shipLength: ")
+            # print(shipLength)
+            # print("remainingShips: ")
+            # print(remainingShips)
             numQuestions += questionsAsked
         else:
             grid[y, x] = 1
 
         finished = len(remainingShips)==0
 
-    print("All your ships have been sunk! There were a total of "+str(numQuestions)+" asked.")
+    print("All your ships have been sunk! There were a total of "+str(numQuestions)+" questions asked.")
 
 def getMostProbablePosition(grid, remainingShips):
     freq = np.array([[0 for _ in range(10)] for _ in range(10)])
@@ -97,7 +102,7 @@ def sinkShip(shipCoords, grid, numQuestions, remainingShips):
             if isHit[0].lower() == 'h':
                 grid[y, x] = 2
                 shipCoords.append(position)
-                sunkAnswer = list(input("Is the ship sunk? Reply with yes/no. If it has, also put the length of the ship (e.g, \"yes 3\").").split(" "))
+                sunkAnswer = list(input("Is a ship sunk? Reply with yes/no. If so, also put the length of the ship sunk (e.g, \"yes 3\"): ").split(" "))
                 # print(sunkAnswer)
                 if sunkAnswer[0][0].lower() == 'y':
                     # print("yay fully sunk")
@@ -146,6 +151,10 @@ def sinkShip(shipCoords, grid, numQuestions, remainingShips):
         else:
             #all the questions have already been asked
             #position is actually questionsAsked
+            # print("grid: ")
+            # print(grid)
+            # print("shipLengths: ")
+            # print(shipLengths)
             return (grid, shipLengths, position)
 
     #ask questions using helper method
@@ -244,12 +253,14 @@ def sinkShipGetMostProbablePosition(shipCoords, grid, numQuestions, remainingShi
             additionalQuestions = 0
             shipLengths = []
             for shipCoord in shipCoords:
-                (grid, shipLength, questionsAsked) = sinkShip(shipCoord, grid, numQuestions+additionalQuestions, remainingShips)
+                (grid, shipLength, questionsAsked) = sinkShip([shipCoord], grid, numQuestions+additionalQuestions, remainingShips)
                 additionalQuestions+= questionsAsked
-                if(len(shipLength)==1):
-                    shipLengths.append(shipLength)
-                else:
-                    shipLengths = shipLengths + shipLength
+
+                shipLengths = shipLengths + shipLength
+                # print("helper shipLength: ")
+                # print(shipLength)
+                # print("helper shipLengths: ")
+                # print(shipLengths)
             return (additionalQuestions, shipLengths)
 
         if (freq[1] > freq[0]):
