@@ -250,7 +250,10 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
                 spacePositionCounter = 0
                 for i in range(len(lengths)-1):
                     spaceIndices[i] = lengths[i] + spacePositionCounter
-                    spacePositionCounter += spaceIndices[i] + 1
+                    spacePositionCounter = spaceIndices[i] + 1
+
+                # print("spaceIndices: ")
+                # print(spaceIndices)
 
 
                 for position in temp[1:]:
@@ -259,12 +262,14 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
                     numInFront = 0
                     for pos in puncPos:
                         if position > pos:
+                            # print("adding punc in front")
                             numInFront += 1
 
                     for pos in spaceIndices:
                         if position > pos:
                             numInFront += 1
 
+                    # print("numInFront: " + str(numInFront))
                     #spaces using lengths
                     #puncChars has the positions
                     word[position-numInFront] = char
