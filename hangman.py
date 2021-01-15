@@ -86,11 +86,11 @@ def main():
         ans += " "
         charCount += 1
 
-    print("Your word/phrase is \"" + ans[:-1] + "\"! We guessed your word in " + str(numQuestions) + " questions.")
+    print("Your word/phrase is \"" + ans[:-1] + "\"! We guessed your word/phrase in " + str(numQuestions) + " questions.")
 
 
 def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuestions, noChars, yesChars, puncChars):
-    probabilities = countLetters("", numWords, lengths, word, noChars)
+    probabilities = countLetters("", numWords, lengths, word, noChars, yesChars)
     # print("here1")
 
     #****** check if there's only one word possible then guess that if so
@@ -106,22 +106,25 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
             if (probabilities[j][26] != 1):
                 break
             if (j == numWords - 1):
+                excludeString = ""
+                for yesCharacter in yesChars:
+                    excludeString += yesCharacter
+                for noCharacter in noChars:
+                    excludeString += noCharacter
+
                 for i in range(numWords):
                     regex = ""
                     for x in range(lengths[i]):
-                        if word[sum(lengths[:i]) + x] == "":
-                            regex += "."
+                        if word[sum(lengths[:i])+x] == "":
+                            if excludeString == "":
+                                regex += "."
+                            else:
+                                regex += "[^"+excludeString+"]"
                         else:
-                            regex += word[sum(lengths[:i]) + x]
+                            regex += word[sum(lengths[:i])+x]
 
                     for teststr in wordList:
-                        skipping = False
-                        for testchr in noChars:
-                            if testchr in teststr:
-                                skipping = True
-                        if skipping:
-                            continue
-                        if len(teststr) == len(regex) and re.match(regex, teststr):
+                        if re.fullmatch(regex, teststr):
                             for k in range(lengths[i]):
                                 word[sum(lengths[:i]) + k] = teststr[k]
         return (numQuestions, word, lieDetected, noQuestions, noChars, yesChars)
@@ -132,81 +135,31 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
 
 
     # convert each entry in probabilities into a probability
-
-    # guaranteed = []
     for i in range(numWords):
         for j in range(26):
             if probabilities[i][26] == 0:
-                print("Error: word/phrase not in local dictionary.")
+                print("Error: word " + str(i+1) + " not in local dictionary.")
                 sys.exit()
             probabilities[i][j][0] = float(probabilities[i][j][0]) / probabilities[i][26]
-            # if i == 0 and probabilities[i][j][1] == probabilities[i][26]:
-            #     guaranteed.append(alpha[j])
-            # if alpha[j] in guaranteed and probabilities[i][j][1] != probabilities[i][26]:
-            #     guaranteed.remove(alpha[j])
-    # print("here3")
-    # print(word)
-
-    # check 100% probability thing
-
-    # for char in guaranteed:
-    #     if char in yesChars:
-    #         guaranteed.remove(char)
-    # print("here4")
-    # print(word)
-
-    # guaranteed now has the list of letters that are guaranteed to be in the word/phrase
-
-    # for char in guaranteed:
-    #     for i in range(numWords):
-    #         ret = checkLetter(char, i, numWords, lengths, word, noChars)
-    #         if ret == False:
-    #             guaranteed.remove(char)
-    # print("here5")
-    # print(word)
-
-    # guaranteed has every letter we don't want to ask about now
-
-    # print(guaranteed)
-    # for char in guaranteed:
-    #     for i in range(numWords):
-    #         regex = ""
-    #         for x in range(lengths[i]):
-    #             if word[sum(lengths[:i]) + x] == "":
-    #                 regex += "."
-    #             else:
-    #                 regex += word[sum(lengths[:i]) + x]
-    #
-    #         for teststr in wordList:
-    #             if len(teststr) == len(regex) and re.match(regex, teststr):
-    #                 if teststr.find(char) == -1:
-    #                     break
-    #                 else:
-    #                     word[sum(lengths[:i]) + teststr.index(char)] = char
-    # print("here6")
-    # print(word)
-
-    # for char in guaranteed:
-    #     yesChars.append(char)
-    # print("here7")
-    # print(word)
-
-    # guaranteed now has the list of letters that are guaranteed to be in the word/phrase
-
 
     counter = [[0 for _ in range(26)] for _ in range(numWords)]
 
     if lieDetected==False:
         for char in noQuestions:
-            additionalCount = countLetters(char, numWords, lengths, word, noChars)
+            tempNoQuestions = noQuestions.copy()
+            tempNoQuestions.remove(char)
+            # print("noQuestions: ")
+            # print(noQuestions)
+            # print("tempNoQuestions: ")
+            # print(tempNoQuestions)
+            additionalCount = countLetters(char, numWords, lengths, word, noChars+tempNoQuestions, yesChars)
             for i in range(numWords):
                 for j in range(26):
                     counter[i][j] += additionalCount[i][j][0]*probabilities[i][j][0]
     # print("here8")
-    #
     # print(noChars)
     # print(noQuestions)
-    assumingTrueCount = countLetters("", numWords, lengths, word, noChars + noQuestions)
+    assumingTrueCount = countLetters("", numWords, lengths, word, noChars + noQuestions, yesChars)
     #now, assuming all the no's were legit
     for i in range(numWords):
         multiplier = 1 - sum([probabilities[i][alpha.index(noQuestionChar)][0] for noQuestionChar in noQuestions])
@@ -314,29 +267,37 @@ def askNextQuestion(numQuestions, numWords, lengths, word, lieDetected, noQuesti
 
 
 
-def countLetters(c, numWords, lengths, word, noChars):
+def countLetters(c, numWords, lengths, word, noChars, yesChars):
     ret = [[[0, 0] for _ in range(26)] for _ in range(numWords)]
+    excludeString = ""
+    for yesCharacter in yesChars:
+        excludeString += yesCharacter
+    for noCharacter in noChars:
+        excludeString += noCharacter
+
     for i in range(numWords):
         ret[i].append(0)
         regex = ""
         for x in range(lengths[i]):
             if word[sum(lengths[:i])+x] == "":
-                regex += "."
+                if excludeString == "":
+                    regex += "."
+                else:
+                    regex += "[^"+excludeString+"]"
             else:
                 regex += word[sum(lengths[:i])+x]
+
         # print("word: ")
         # print(word)
+        # print("yesChars: ")
+        # print(yesChars)
+        # print("noChars: ")
         # print(noChars)
-        # print("regex: " + regex)
+        # print("char: " + c)
+        print("regex: " + regex)
 
         for teststr in wordList:
-            skipping = False
-            for testchr in noChars:
-                if testchr in teststr:
-                    skipping = True
-            if skipping:
-                continue
-            if len(teststr) == len(regex) and re.match(regex, teststr) and c in teststr:
+            if re.fullmatch(regex, teststr) and c in teststr:
                 ret[i][-1] += 1
                 for j in range(26):
                     if alpha[j] in teststr:
@@ -344,49 +305,6 @@ def countLetters(c, numWords, lengths, word, noChars):
                         ret[i][ord(alpha[j])-ord(alpha[0])][1] += 1
 
     return ret
-
-# check if letter given 100% prob is in same position in each possible valid word
-# c is the input letter
-# i is the index of the word within which c has a 100% chance of being, corresponding to the
-# appropriate index within the lengths array
-# returns true if the letter is in the same unique position in each valid word, false otherwise
-# def checkLetter(c, i, numWords, lengths, word, noChars):
-#     regex = ""
-#     for x in range(lengths[i]):
-#         if word[sum(lengths[:i])+x] == "":
-#             regex += "."
-#         else:
-#             regex += word[sum(lengths[:i])+x]
-#
-#     prev = -1
-#     found = False
-#     checked = False
-#     for teststr in wordList:
-#         skipping = False
-#         for testchr in noChars:
-#             if testchr in teststr:
-#                 skipping = True
-#         if skipping:
-#             continue
-#
-#         if len(teststr) == len(regex) and re.match(regex, teststr):
-#             if teststr.find(c) != -1:
-#                 found = True
-#             if teststr.find(c) == -1:
-#                 if found:
-#                     return False
-#                 else:
-#                     checked = True
-#             elif prev == -1:
-#                 if checked:
-#                     return False
-#                 prev = teststr.find(c)
-#             elif teststr.find(c) != prev or teststr.rfind(c) != prev:
-#                 return False
-#             checked = True
-#
-#     return True
-
 
 def isInt(number):
     try:
